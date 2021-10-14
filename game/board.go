@@ -222,7 +222,7 @@ func (b *Board) DisplayStage()  {
 	fmt.Println()
 	fmt.Println()
 	if !b.gameOver {
-		fmt.Printf("%d/t", b.score)
+		fmt.Printf("%d%+v", b.score, b.snake.Head)
 	} else {
 		fmt.Println("GAME OVER.")
 		fmt.Println("PRESS 'r' to Restart")
