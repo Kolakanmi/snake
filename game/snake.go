@@ -33,13 +33,13 @@ func (s *Snake) AddTail(dir Direction)  {
 	}
 	switch dir {
 	case left:
-		yH++
-	case right:
-		yH--
-	case up:
 		xH++
-	case down:
+	case right:
 		xH--
+	case up:
+		yH++
+	case down:
+		yH--
 	}
 	newTail.Set(xH, yH)
 	s.Tail = append(s.Tail, newTail)
