@@ -9,17 +9,17 @@ import (
 	"time"
 )
 
-type Board struct {
-	width int
-	height int
-	stage [][]int
-	snake *Snake
-	food Food
-	score int
-	gameOver bool
-	stop bool
-	dir Direction
-	speed int
+type board struct {
+	width        int
+	height       int
+	stage        [][]int
+	snake        *snake
+	food         food
+	score        int
+	gameOver     bool
+	stop         bool
+	dir          direction
+	speed        int
 	currentRound int64
 }
 
@@ -49,48 +49,34 @@ func Run() {
 		}
 	}
 
-	b := CreateBoard(size)
+	b := createBoard(size)
 	go func() {
-		b.Input()
+		b.input()
 	}()
 	for !b.stop {
 		for !b.gameOver {
-			b.DisplayStage()
+			b.displayStage()
 		}
 	}
 
 }
 
-func (b *Board) DisplayStage2()  {
-	for i, x := range b.stage{
-		for j := range x {
-			if b.stage[i][j] == 1 && j == len(x) - 1{
-				fmt.Println("*")
-			} else if b.stage[i][j] == 1 {
-				fmt.Print("*")
-			} else {
-				fmt.Print(" ")
-			}
-		}
-	}
-}
-
-func (b *Board) SetIndexValue(x, y, val int) {
+func (b *board) setIndexValue(x, y, val int) {
 	b.stage[y][x] = val
 }
 
-func (b *Board) clearFood() {
-	x, y := b.food.Pos.Get()
-	b.SetIndexValue(x, y, 0)
+func (b *board) clearFood() {
+	x, y := b.food.pos.get()
+	b.setIndexValue(x, y, 0)
 }
 
-func (b *Board) setSnake(dir Direction) {
-	x, y := b.snake.Head.Get()
+func (b *board) setSnake(dir direction) {
+	x, y := b.snake.Head.get()
 	x0, y0 := x, y
-	b.SetIndexValue(x, y, 0)
+	b.setIndexValue(x, y, 0)
 	for i := 0; i < len(b.snake.Tail); i++ {
-		txn, tyn := b.snake.Tail[i].Get()
-		b.SetIndexValue(txn, tyn, 0)
+		txn, tyn := b.snake.Tail[i].get()
+		b.setIndexValue(txn, tyn, 0)
 	}
 	dirTemp := dir
 	b.currentRound += 1
@@ -118,31 +104,31 @@ func (b *Board) setSnake(dir Direction) {
 	if x >= len(b.stage[0]) - 1{
 		x = 1
 	}
-	b.snake.Head.Set(x, y)
-	b.SetIndexValue(x, y, 4)
+	b.snake.Head.set(x, y)
+	b.setIndexValue(x, y, 4)
 
 	xp, yp := 0, 0
 	for i := 0; i < len(b.snake.Tail); i++ {
-		xc, yc := b.snake.Tail[i].Get()
+		xc, yc := b.snake.Tail[i].get()
 		if i == 0 {
-			b.snake.Tail[i].Set(x0, y0)
-			b.SetIndexValue(x0, y0, 2)
+			b.snake.Tail[i].set(x0, y0)
+			b.setIndexValue(x0, y0, 2)
 		} else {
-			b.snake.Tail[i].Set(xp, yp)
-			b.SetIndexValue(xp, yp, 2)
+			b.snake.Tail[i].set(xp, yp)
+			b.setIndexValue(xp, yp, 2)
 		}
 		xp, yp = xc, yc
 	}
 
-	xFood, yFood := b.food.Pos.Get()
+	xFood, yFood := b.food.pos.get()
 
 	if x == xFood && y == yFood {
 		b.newFood()
 		b.score += 1
-		b.snake.AddTail(dirTemp)
+		b.snake.addTail(dirTemp)
 
-		xl, yl := b.snake.GetLastTail()
-		b.SetIndexValue(xl, yl, 2)
+		xl, yl := b.snake.getLastTail()
+		b.setIndexValue(xl, yl, 2)
 	}
 	for _, t := range b.snake.Tail {
 		if x == t.x && y == t.y {
@@ -151,34 +137,43 @@ func (b *Board) setSnake(dir Direction) {
 	}
 }
 
-func (b *Board) newFood() {
-	b.food = CreateFood(b.width, b.height)
-	xFood, yFood := b.food.Pos.Get()
+func (b *board) newFood() {
+	b.food = createFood(b.width, b.height)
+	xFood, yFood := b.food.pos.get()
 	retry := false
 	for _, v := range b.snake.Tail {
-		xt, yt := v.Get()
+		xt, yt := v.get()
 		if xt == xFood && yt == yFood {
 			retry = true
 			break
 		}
 	}
 	if !retry {
-		b.SetIndexValue(xFood, yFood, 3)
+		b.setIndexValue(xFood, yFood, 3)
 	} else  {
 		b.newFood()
 	}
 }
 
-func (b *Board) Input() {
+func (b *board) input() {
 	ch := make(chan string)
 	cmd1 := exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1")
-	cmd1.Run()
+	err := cmd1.Run()
+	if err != nil {
+		panic("Could not run command to read input without pressing 'Enter key'.")
+	}
 	cmd2 := exec.Command("stty", "-F", "/dev/tty", "-echo")
-	cmd2.Run()
+	err = cmd2.Run()
+	if err != nil {
+		panic("Could not run command to read input without pressing 'Enter key'.")
+	}
 	go func(ch chan string) {
-		var bb []byte = make([]byte, 1)
+		var bb = make([]byte, 1)
 		for  {
-			os.Stdin.Read(bb)
+			_, err := os.Stdin.Read(bb)
+			if err != nil {
+				panic("Could not read input.")
+			}
 			ch <- string(bb)
 		}
 	}(ch)
@@ -210,21 +205,21 @@ func (b *Board) Input() {
 				//cmd2.Process.Kill()
 				os.Exit(4)
 			case "r":
-				b.Restart()
+				b.restart()
 			}
 		}
 	}
 }
 
-func (b *Board) Logic() {
+func (b *board) logic() {
 	if b.dir != stop {
 		b.setSnake(b.dir)
 	}
 }
 
-func (b *Board) DisplayStage()  {
+func (b *board) displayStage()  {
 	utils.ClearTerminal()
-	b.Logic()
+	b.logic()
 
 	utils.ClearTerminal()
 	for i, y := range b.stage{
@@ -262,39 +257,39 @@ func (b *Board) DisplayStage()  {
 		fmt.Printf("\t\t\t\t\t\t\t%s\n","d: Move Right")
 	} else {
 		fmt.Println("GAME OVER.")
-		fmt.Println("PRESS 'r' to Restart")
+		fmt.Println("PRESS 'r' to restart")
 		fmt.Println("PRESS 'x' to End")
 	}
 
 	time.Sleep(100* time.Millisecond)
 }
 
-func CreateBoard(size int) *Board {
-	b := &Board{
+func createBoard(size int) *board {
+	b := &board{
 		width: size * 3,
 		height: size,
 		dir: up,
 		stop: false,
 	}
-	b.SetStage()
+	b.setStage()
 	return b
 }
 
-func (b *Board) Restart() {
-	b.SetStage()
+func (b *board) restart() {
+	b.setStage()
 	b.score = 0
 	b.currentRound = 0
 	b.stop = false
 	b.gameOver = false
 }
 
-func (b *Board) SetStage() {
+func (b *board) setStage() {
 	b.stage = make([][]int, b.height)
 	for i := range b.stage {
 		b.stage[i] = make([]int, b.width)
 	}
 
-	b.snake = &Snake{
+	b.snake = &snake{
 		length: 1,
 		Head: &coord{
 			x: b.width/2,
@@ -302,16 +297,16 @@ func (b *Board) SetStage() {
 		},
 	}
 
-	b.food = CreateFood(b.width, b.height)
+	b.food = createFood(b.width, b.height)
 	//food := CreateFood(b.width, b.height)
 	//b.food = food
 
-	b.SetBorder()
-	xFood, yFood := b.food.Pos.Get()
+	b.setBorder()
+	xFood, yFood := b.food.pos.get()
 	b.stage[yFood][xFood] = 3
 }
 
-func (b *Board) SetBorder() {
+func (b *board) setBorder() {
 	for i, y := range b.stage{
 		for j := range y {
 			if i == 0 || i == len(b.stage) -1 {

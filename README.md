@@ -1,4 +1,4 @@
-#SKYCOIN TEST TASK
+#SKYCOIN SNAKE GAME TEST TASK
 ## TIME SPENT
 ### Total hours spent for this task is less than 8 hours.
 

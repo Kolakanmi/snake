@@ -4,8 +4,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"strconv"
-	"strings"
 )
 
 var clear map[string]func()
@@ -31,12 +29,4 @@ func ClearTerminal()  {
 	} else {
 		panic("Unsupported platform.")
 	}
-}
-
-func ConvertToUnicode(s string) string {
-	r, err := strconv.ParseInt(strings.TrimPrefix(s, "\\U"), 16, 32)
-	if err != nil {
-		return "*"
-	}
-	return string(r)
 }

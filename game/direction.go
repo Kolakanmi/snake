@@ -1,9 +1,9 @@
 package game
 
-type Direction int
+type direction int
 
 const (
-	stop Direction = iota
+	stop direction = iota
 	left
 	right
 	up

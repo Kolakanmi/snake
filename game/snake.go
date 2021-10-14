@@ -1,35 +1,24 @@
 package game
 
-type Snake struct {
+type snake struct {
 	length int
 	Head *coord
 	Tail []*coord
 	tailLength int
 }
 
-func CreateSnake(x, y int) *Snake {
-	return &Snake{
-		length: 1,
-		Head: &coord{
-			x: x,
-			y: y,
-		},
-	}
+func (s *snake) getLastTail() (int, int) {
+	return s.Tail[len(s.Tail) - 1].get()
 }
 
-func (s *Snake) GetLastTail() (int, int) {
-	return s.Tail[len(s.Tail) - 1].Get()
-}
-
-func (s *Snake) AddTail(dir Direction)  {
-	xH, yH := s.Head.Get()
+func (s *snake) addTail(dir direction)  {
+	xH, yH := s.Head.get()
 	newTail := &coord{
 		x: xH,
 		y: yH,
 	}
 	if len(s.Tail) > 0 {
-		xH, yH = s.Tail[len(s.Tail) - 1].Get()
-		//newTail.Set(xH, yH)
+		xH, yH = s.Tail[len(s.Tail) - 1].get()
 	}
 	switch dir {
 	case left:
@@ -41,7 +30,7 @@ func (s *Snake) AddTail(dir Direction)  {
 	case down:
 		yH--
 	}
-	newTail.Set(xH, yH)
+	newTail.set(xH, yH)
 	s.Tail = append(s.Tail, newTail)
 }
 
@@ -50,11 +39,11 @@ type coord struct {
 	y int
 }
 
-func (c *coord) Set(x,y int)  {
+func (c *coord) set(x,y int)  {
 	c.x = x
 	c.y = y
 }
 
-func (c *coord) Get() (int, int) {
+func (c *coord) get() (int, int) {
 	return c.x, c.y
 }
