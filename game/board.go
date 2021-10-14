@@ -232,10 +232,10 @@ func (b *Board) DisplayStage()  {
 	time.Sleep(100* time.Millisecond)
 }
 
-func CreateBoard(width int) *Board {
+func CreateBoard(size int) *Board {
 	b := &Board{
-		width: width,
-		height: width * 3,
+		width: size * 3,
+		height: size,
 		dir: up,
 		stop: false,
 	}
@@ -251,9 +251,9 @@ func (b *Board) Restart() {
 }
 
 func (b *Board) SetStage() {
-	b.stage = make([][]int, b.width)
+	b.stage = make([][]int, b.height)
 	for i := range b.stage {
-		b.stage[i] = make([]int, b.height)
+		b.stage[i] = make([]int, b.width)
 	}
 
 	b.snake = &Snake{
