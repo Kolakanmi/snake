@@ -11,3 +11,5 @@
 
 ## NOTE
 ### The board width is set to three times (3*) the board height.
+#
+# HAVE FUN
