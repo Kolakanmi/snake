@@ -5,6 +5,7 @@ import (
 	"github.com/Kolakanmi/snake/utils"
 	"os"
 	"os/exec"
+	"strconv"
 	"time"
 )
 
@@ -22,7 +23,33 @@ type Board struct {
 	currentRound int64
 }
 
-func (b *Board) Run() {
+func Run() {
+	size := 30
+	var input string
+	valid := false
+	for !valid {
+		fmt.Println()
+		fmt.Printf("%s\n\n","Board width will be three times more than height")
+		fmt.Print("Enter board height: ")
+		_, err := fmt.Scan(&input)
+		if err != nil {
+			fmt.Println("Enter a number.")
+		} else {
+			num, err := strconv.Atoi(input)
+			if err != nil {
+				fmt.Printf("%s\n\n", "ENTER A NUMBER.")
+			} else {
+				if num < 10 {
+					fmt.Printf("%s\n\n", "MINIMUM HEIGHT IS 10")
+				} else {
+					size = num
+					valid = true
+				}
+			}
+		}
+	}
+
+	b := CreateBoard(size)
 	go func() {
 		b.Input()
 	}()
@@ -66,6 +93,7 @@ func (b *Board) setSnake(dir Direction) {
 		b.SetIndexValue(txn, tyn, 0)
 	}
 	dirTemp := dir
+	b.currentRound += 1
 	switch dir {
 	case left:
 		x--
@@ -91,7 +119,7 @@ func (b *Board) setSnake(dir Direction) {
 		x = 1
 	}
 	b.snake.Head.Set(x, y)
-	b.SetIndexValue(x, y, 2)
+	b.SetIndexValue(x, y, 4)
 
 	xp, yp := 0, 0
 	for i := 0; i < len(b.snake.Tail); i++ {
@@ -106,25 +134,20 @@ func (b *Board) setSnake(dir Direction) {
 		xp, yp = xc, yc
 	}
 
-	for _, t := range b.snake.Tail {
-		if x == t.x && y == t.y {
-			b.gameOver = true
-		}
-	}
-
 	xFood, yFood := b.food.Pos.Get()
 
 	if x == xFood && y == yFood {
-		//b.food = CreateFood(b.width, b.height)
-		//
-		//xFood, yFood := b.food.Pos.Get()
-		//b.stage[xFood][yFood] = 3
 		b.newFood()
 		b.score += 1
 		b.snake.AddTail(dirTemp)
 
 		xl, yl := b.snake.GetLastTail()
 		b.SetIndexValue(xl, yl, 2)
+	}
+	for _, t := range b.snake.Tail {
+		if x == t.x && y == t.y {
+			b.gameOver = true
+		}
 	}
 }
 
@@ -183,6 +206,9 @@ func (b *Board) Input() {
 			case "x":
 				b.gameOver = true
 				b.stop = true
+				//cmd1.Process.Kill()
+				//cmd2.Process.Kill()
+				os.Exit(4)
 			case "r":
 				b.Restart()
 			}
@@ -213,6 +239,8 @@ func (b *Board) DisplayStage()  {
 				fmt.Print("o")
 			} else if b.stage[i][j] == 3 {
 				fmt.Print("x")
+			}  else if b.stage[i][j] == 4 {
+				fmt.Print("@")
 			} else {
 				fmt.Print(" ")
 			}
@@ -222,7 +250,16 @@ func (b *Board) DisplayStage()  {
 	fmt.Println()
 	fmt.Println()
 	if !b.gameOver {
-		fmt.Printf("%d%+v", b.score, b.snake.Head)
+		fmt.Printf("%s: %d, %s: %d", "Height", b.height, "Width", b.width)
+		fmt.Printf("\t\t\t\t\t%s\n\n","INSTRUCTIONS")
+		fmt.Println("Current round: ", b.currentRound)
+		fmt.Printf("\t\t\t\t\t\t\t%s\n","w: Move Up")
+		fmt.Println("Score: ", b.score)
+		fmt.Printf("\t\t\t\t\t\t\t%s\n","s: Move Down")
+		fmt.Println("Snake length: ", len(b.snake.Tail) + 1)
+		fmt.Printf("\t\t\t\t\t\t\t%s\n","a: Move Left")
+		fmt.Printf("%s: %+v\n", "Snake Head Coordinates", *b.snake.Head)
+		fmt.Printf("\t\t\t\t\t\t\t%s\n","d: Move Right")
 	} else {
 		fmt.Println("GAME OVER.")
 		fmt.Println("PRESS 'r' to Restart")
@@ -246,6 +283,7 @@ func CreateBoard(size int) *Board {
 func (b *Board) Restart() {
 	b.SetStage()
 	b.score = 0
+	b.currentRound = 0
 	b.stop = false
 	b.gameOver = false
 }

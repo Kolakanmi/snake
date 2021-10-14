@@ -7,6 +7,5 @@ import (
 
 func main()  {
 	utils.RegisterUtils()
-	board := game.CreateBoard(20)
-	board.Run()
+	game.Run()
 }
