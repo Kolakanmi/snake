@@ -49,7 +49,7 @@ func (b *Board) DisplayStage2()  {
 }
 
 func (b *Board) SetIndexValue(x, y, val int) {
-	b.stage[x][y] = val
+	b.stage[y][x] = val
 }
 
 func (b *Board) clearFood() {
@@ -68,27 +68,27 @@ func (b *Board) setSnake(dir Direction) {
 	dirTemp := dir
 	switch dir {
 	case left:
-		y--
-	case right:
-		y++
-	case up:
 		x--
-	case down:
+	case right:
 		x++
+	case up:
+		y--
+	case down:
+		y++
 	}
 	//b.dir = stop
 
-	if x <= 0 {
-		x = len(b.stage) - 2
-	}
-	if x >= len(b.stage) - 1 {
-		x = 1
-	}
 	if y <= 0 {
-		y = len(b.stage[0]) - 2
+		y = len(b.stage) - 2
 	}
-	if y >= len(b.stage[0]) - 1{
+	if y >= len(b.stage) - 1 {
 		y = 1
+	}
+	if x <= 0 {
+		x = len(b.stage[0]) - 2
+	}
+	if x >= len(b.stage[0]) - 1{
+		x = 1
 	}
 	b.snake.Head.Set(x, y)
 	b.SetIndexValue(x, y, 2)
@@ -201,11 +201,11 @@ func (b *Board) DisplayStage()  {
 	b.Logic()
 
 	utils.ClearTerminal()
-	for i, x := range b.stage{
-		for j := range x {
-			if b.stage[i][j] == 1 && j == len(x) - 1{
+	for i, y := range b.stage{
+		for j := range y {
+			if b.stage[i][j] == 1 && j == len(y) - 1{
 				fmt.Println("*")
-			} else if b.stage[i][j] == 1 && (i == 0 || i == len(x) - 1 || j == 0) {
+			} else if b.stage[i][j] == 1 && (i == 0 || i == len(y) - 1 || j == 0) {
 				fmt.Print("*")
 			} else if b.stage[i][j] == 1 {
 				fmt.Print("*")
@@ -222,7 +222,7 @@ func (b *Board) DisplayStage()  {
 	fmt.Println()
 	fmt.Println()
 	if !b.gameOver {
-		fmt.Printf("%d/t", b.score)
+		fmt.Printf("%d%+v", b.score, b.snake.Head)
 	} else {
 		fmt.Println("GAME OVER.")
 		fmt.Println("PRESS 'r' to Restart")
@@ -270,16 +270,16 @@ func (b *Board) SetStage() {
 
 	b.SetBorder()
 	xFood, yFood := b.food.Pos.Get()
-	b.stage[xFood][yFood] = 3
+	b.stage[yFood][xFood] = 3
 }
 
 func (b *Board) SetBorder() {
-	for i, x := range b.stage{
-		for j := range x {
+	for i, y := range b.stage{
+		for j := range y {
 			if i == 0 || i == len(b.stage) -1 {
 				b.stage[i][j] = 1
 				continue
-			} else if j == 0 || j == len(x) -1 {
+			} else if j == 0 || j == len(y) -1 {
 				b.stage[i][j] = 1
 				continue
 			}
